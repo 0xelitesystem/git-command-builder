@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Command Builder</title>
+<meta name="description" content="Task-first git helper. Pick what you want to do in plain language and get the exact git command, with every flag explained and safety warnings on destructive operations. Runs entirely in your browser.">
+<link rel="canonical" href="https://0xelitesystem.github.io/git-command-builder/">
+<meta property="og:title" content="Git Command Builder">
+<meta property="og:description" content="From 'I want to...' to the exact git command. Searchable everyday git tasks with flag explanations and safety warnings. No external dependencies, works offline.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://0xelitesystem.github.io/git-command-builder/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Git Command Builder",
+  "description": "Task-first git helper. Pick what you want to do in plain language and get the exact git command, with flags explained and safety warnings on destructive operations.",
+  "url": "https://0xelitesystem.github.io/git-command-builder/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "0xelitesystem" }
+}
+</script>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #ffffff;
+  --ink: #0a1d1e;
+  --ink-soft: #2c4a4c;
+  --rule: #c8d4d3;
+  --teal: #0f5c60;
+  --teal-deep: #0a4548;
+  --gold: #b07d2a;
+  --gold-deep: #8a611f;
+  --ok: #1a5c2e;
+  --warn: #8a5a00;
+  --err: #8b1a1a;
+  --err-bg: #f7e8e8;
+  --code-bg: #f0ebe1;
+  --ph: #b03d8f;
+  --sub: #2660a8;
+}
+[data-theme="dark"] {
+  --bg: #0c1c1d;
+  --surface: #14292a;
+  --ink: #e8ebe6;
+  --ink-soft: #b0c0bd;
+  --rule: #2a4042;
+  --teal: #4ab4ba;
+  --teal-deep: #6dc8ce;
+  --gold: #d4a155;
+  --gold-deep: #e6b876;
+  --ok: #6dd380;
+  --warn: #d4a155;
+  --err: #e88080;
+  --err-bg: #2a1416;
+  --code-bg: #0a1718;
+  --ph: #d97ab8;
+  --sub: #6da8e0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  line-height: 1.55;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid var(--teal);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--teal);
+}
+.tag {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  color: var(--gold-deep);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+[data-theme="dark"] .tag { color: var(--gold); }
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.theme-btn:hover { border-color: var(--teal); color: var(--teal); }
+.lede {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.75rem;
+  max-width: 62ch;
+}
+.search-box {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1.25rem;
+  margin-bottom: 1.75rem;
+  border-radius: 3px;
+}
+label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+input[type="search"], input[type="text"] {
+  width: 100%;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 0.65rem 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.search-hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 0.5rem;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+.task-nav {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1rem;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+.cat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gold-deep);
+  margin: 1rem 0 0.35rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+[data-theme="dark"] .cat-label { color: var(--gold); }
+.task-nav .cat-label:first-child { margin-top: 0; }
+.task-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+  border-radius: 2px;
+  line-height: 1.4;
+}
+.task-btn:hover { background: var(--code-bg); }
+.task-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
+.task-btn[aria-current="true"] {
+  border-left-color: var(--teal);
+  background: var(--code-bg);
+  font-weight: 600;
+}
+.mini-badge {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--err);
+  border: 1px solid var(--err);
+  border-radius: 2px;
+  padding: 0 0.3rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+.no-results {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 0.5rem;
+}
+.detail {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1.5rem;
+  min-height: 300px;
+}
+.detail-empty {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+.detail-cat {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold-deep);
+  margin-bottom: 0.25rem;
+}
+[data-theme="dark"] .detail-cat { color: var(--gold); }
+.detail h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+.danger-badge {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.68rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--err);
+  border: 1px solid var(--err);
+  border-radius: 2px;
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+}
+.inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+.cmd-block { margin-bottom: 1.1rem; }
+.cmd-why {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-bottom: 0.3rem;
+}
+.cmd-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+pre.cmd {
+  flex: 1;
+  background: var(--code-bg);
+  padding: 0.85rem;
+  border-radius: 2px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  margin: 0;
+}
+pre.cmd .ph { color: var(--ph); font-style: italic; }
+pre.cmd .sub { color: var(--sub); font-weight: 600; }
+.copy-btn {
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.copy-btn:hover { border-color: var(--teal); color: var(--teal); }
+.copy-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+.copy-btn.copied { border-color: var(--ok); color: var(--ok); }
+.flags {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+}
+.flags-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+}
+.flag-row {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.45rem;
+}
+.flag-term {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.8rem;
+  color: var(--teal);
+  white-space: nowrap;
+}
+.flag-text { color: var(--ink); }
+.warn-box {
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: var(--err-bg);
+  border-left: 3px solid var(--err);
+  border-radius: 2px;
+  font-size: 0.85rem;
+}
+.warn-box strong { color: var(--err); }
+.safe-box {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: var(--code-bg);
+  border-left: 3px solid var(--ok);
+  border-radius: 2px;
+  font-size: 0.85rem;
+}
+.safe-box strong { color: var(--ok); }
+.task-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.task-note code, .warn-box code, .safe-box code, .flag-text code {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.8em;
+  background: var(--code-bg);
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+}
+.warn-box code { background: transparent; padding: 0; }
+.scope-note {
+  margin-top: 1.75rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  max-width: 70ch;
+}
+footer {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+footer a { color: var(--teal); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+.privacy-note {
+  font-size: 0.78rem;
+  color: var(--gold-deep);
+  margin-top: 0.5rem;
+}
+[data-theme="dark"] .privacy-note { color: var(--gold); }
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .task-nav { max-height: 40vh; }
+}
+@media (max-width: 640px) {
+  body { padding: 1rem 0.75rem; }
+  h1 { font-size: 1.4rem; }
+  .flag-row { grid-template-columns: 1fr; gap: 0.1rem 0; margin-bottom: 0.6rem; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Git Command Builder</h1>
+    <div class="tag">From "I want to..." to the exact command</div>
+  </div>
+  <button class="theme-btn" id="theme-toggle" type="button">Dark</button>
+</header>
+
+<p class="lede">You know what you want to do. You just do not remember the incantation. Search for the goal in plain words, pick the task, and get the exact command with every flag explained. Destructive commands carry a visible warning and a safer alternative.</p>
+
+<div class="search-box">
+  <label for="search">Search tasks</label>
+  <input type="search" id="search" placeholder="undo, delete branch, rename, stash, force push..." autocomplete="off" spellcheck="false">
+  <div class="search-hint" id="search-hint"></div>
+</div>
+
+<div class="layout">
+  <nav class="task-nav" id="task-nav" aria-label="Git tasks"></nav>
+  <section class="detail" id="detail" aria-live="polite">
+    <p class="detail-empty">Pick a task on the left, or search above. Placeholders like <code style="font-family: ui-monospace, monospace; color: var(--ph); font-style: italic;">&lt;branch-name&gt;</code> turn into your real values as you type them into the small input fields.</p>
+  </section>
+</div>
+
+<p class="scope-note">Honest scope note: this covers the everyday tasks that send most people searching the web, not the full git reference. For anything exotic, <span style="font-family: ui-monospace, monospace; font-size: 0.9em;">git help &lt;command&gt;</span> is the source of truth.</p>
+
+<div class="privacy-note">Everything runs locally in your browser. No external dependencies, works offline. Nothing you type is sent anywhere.</div>
+
+<footer>
+  <div>Git Command Builder. Open source, MIT licensed. <a href="https://github.com/0xelitesystem/git-command-builder" target="_blank" rel="noopener">View source</a>.</div>
+  <div>Built by <a href="https://elitesystem.ai" target="_blank" rel="noopener">elitesystem.ai</a></div>
+</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+// Theme toggle
+const themeBtn = $("theme-toggle");
+function setTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "dark" ? "Light" : "Dark";
+}
+themeBtn.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  setTheme(cur === "dark" ? "light" : "dark");
+});
+setTheme("light");
+
+/*
+ Task schema:
+ id, cat, goal, kw (extra search words),
+ inputs: [{k, label, ph}]  ph = placeholder display name shown as <ph>
+ cmds: [{c, why}]          c uses {k} tokens
+ flags: [[term, text]]
+ warn: destructive warning text (adds badge)
+ safe: safer-alternative text
+ note: extra plain-language note
+*/
+const TASKS = [
+
+// ---------- Undoing things ----------
+{ id: "undo-keep", cat: "Undoing things", goal: "Undo the last commit but keep my changes",
+  kw: "revert uncommit soft reset mistake wrong",
+  cmds: [{ c: "git reset --soft HEAD~1" }],
+  flags: [
+    ["--soft", "Moves the branch pointer back one commit but leaves your files and the staging area exactly as they were. The changes from the undone commit stay staged, ready to re-commit."],
+    ["HEAD~1", "One commit before the current one. Use HEAD~2 to undo the last two commits, and so on."]
+  ],
+  note: "If you already pushed the commit, do not reset. Use \"Undo a commit that was already pushed\" instead, which uses git revert." },
+
+{ id: "undo-discard", cat: "Undoing things", goal: "Undo the last commit and throw away its changes",
+  kw: "hard reset delete discard remove commit completely",
+  cmds: [{ c: "git reset --hard HEAD~1" }],
+  flags: [
+    ["--hard", "Moves the branch pointer back one commit AND resets both the staging area and your working files to match. The undone commit's changes are gone from your files."],
+    ["HEAD~1", "One commit before the current one."]
+  ],
+  warn: "git reset --hard permanently discards uncommitted work in your working tree along with the undone commit's changes. There is no confirmation prompt.",
+  safe: "If you are not 100% sure, run git stash first so your current work is recoverable, or use --soft to keep the changes staged. A discarded commit itself can often be recovered via git reflog, but uncommitted changes cannot." },
+
+{ id: "unstage-file", cat: "Undoing things", goal: "Unstage a file (keep the edits)",
+  kw: "remove from staging index added by accident git add undo",
+  inputs: [{ k: "file", label: "File path", ph: "file" }],
+  cmds: [{ c: "git restore --staged {file}" }],
+  flags: [
+    ["restore --staged", "Removes the file from the staging area (the index) without touching the file's contents on disk. Your edits stay in the working tree, just no longer queued for commit."]
+  ],
+  note: "Older equivalent: git reset HEAD <file>. Both are safe; neither changes the file itself." },
+
+{ id: "discard-file", cat: "Undoing things", goal: "Discard my local changes to one file",
+  kw: "throw away revert file checkout restore undo edits",
+  inputs: [{ k: "file", label: "File path", ph: "file" }],
+  cmds: [{ c: "git restore {file}" }],
+  flags: [
+    ["restore", "Overwrites the file in your working tree with the version from the last commit (HEAD). Only this file is touched."]
+  ],
+  warn: "This permanently deletes your uncommitted edits to that file. Unlike a bad commit, discarded working-tree changes are NOT recoverable from the reflog.",
+  safe: "If there is any chance you want the edits later, run git stash push <file> instead. That saves the changes where you can get them back with git stash pop." },
+
+{ id: "amend-msg", cat: "Undoing things", goal: "Fix the last commit message",
+  kw: "amend edit change reword typo message",
+  inputs: [{ k: "msg", label: "New commit message", ph: "new-message" }],
+  cmds: [{ c: "git commit --amend -m \"{msg}\"" }],
+  flags: [
+    ["--amend", "Replaces the last commit with a new one. Same changes, new message and new commit hash."],
+    ["-m", "Supplies the message inline instead of opening an editor."]
+  ],
+  warn: "Amending rewrites history: the commit gets a new hash. Only amend commits you have NOT pushed yet, or you will need a force push and anyone who pulled the old commit gets conflicts.",
+  safe: "If the commit is already pushed and shared, leave the message alone or coordinate with your team before force pushing with --force-with-lease." },
+
+{ id: "amend-add", cat: "Undoing things", goal: "Add a forgotten file to the last commit",
+  kw: "amend include missed forgot append commit",
+  inputs: [{ k: "file", label: "File path", ph: "file" }],
+  cmds: [
+    { c: "git add {file}", why: "Stage the file you forgot." },
+    { c: "git commit --amend --no-edit", why: "Fold it into the previous commit." }
+  ],
+  flags: [
+    ["--amend", "Replaces the last commit with a new one that includes everything staged right now plus the original changes."],
+    ["--no-edit", "Keeps the existing commit message instead of opening an editor."]
+  ],
+  warn: "Amending rewrites the last commit (new hash). Safe if you have not pushed it yet; if you have, you will need a force push.",
+  safe: "For an already-pushed commit, just make a small follow-up commit instead. Boring beats rewriting shared history." },
+
+{ id: "revert-pushed", cat: "Undoing things", goal: "Undo a commit that was already pushed",
+  kw: "revert safe shared remote public rollback",
+  inputs: [{ k: "commit", label: "Commit hash", ph: "commit-hash" }],
+  cmds: [{ c: "git revert {commit}" }],
+  flags: [
+    ["revert", "Creates a NEW commit that applies the exact opposite of the given commit. History is preserved, nothing is rewritten, so it is safe on shared branches."]
+  ],
+  note: "This is the polite way to undo on a shared branch. reset rewrites history; revert adds to it. Push the revert commit like any normal commit." },
+
+// ---------- Branches ----------
+{ id: "branch-create", cat: "Branches", goal: "Create a new branch and switch to it",
+  kw: "checkout -b make new start feature switch",
+  inputs: [{ k: "branch", label: "Branch name", ph: "branch-name" }],
+  cmds: [{ c: "git switch -c {branch}" }],
+  flags: [
+    ["switch", "Changes which branch you are on. Newer and clearer than the overloaded git checkout."],
+    ["-c", "Create the branch first, then switch to it. One step instead of two."]
+  ],
+  note: "Older equivalent: git checkout -b <branch-name>. Both work; switch is just less ambiguous." },
+
+{ id: "branch-del-local", cat: "Branches", goal: "Delete a local branch",
+  kw: "remove branch -d -D kill",
+  inputs: [{ k: "branch", label: "Branch name", ph: "branch-name" }],
+  cmds: [{ c: "git branch -d {branch}" }],
+  flags: [
+    ["-d", "Deletes the branch, but ONLY if it has been merged into the current branch. Git refuses otherwise, which protects unmerged work."],
+    ["-D", "(capital) Force-deletes even if unmerged. Only reach for this when you truly want to abandon the work."]
+  ],
+  warn: "git branch -D throws away commits that exist nowhere else. Prefer lowercase -d and let git protect you; if it refuses, that refusal is information.",
+  safe: "If -d refuses and you still want to delete, first note the branch tip hash with git log -1 <branch-name> so you can recover it from the reflog if you change your mind." },
+
+{ id: "branch-del-remote", cat: "Branches", goal: "Delete a branch on the remote",
+  kw: "remove remote origin push delete server github",
+  inputs: [{ k: "branch", label: "Branch name", ph: "branch-name" }],
+  cmds: [{ c: "git push origin --delete {branch}" }],
+  flags: [
+    ["push origin --delete", "Tells the remote named origin to delete its copy of the branch. Your local branch (if any) is untouched."]
+  ],
+  warn: "This removes the branch for everyone using that remote. Anyone with work based on it will be stranded until they re-push.",
+  safe: "Check it is fully merged first: git branch -r --merged shows remote branches already merged into your current branch." },
+
+{ id: "branch-rename", cat: "Branches", goal: "Rename a branch",
+  kw: "move -m change name",
+  inputs: [{ k: "old", label: "Current name", ph: "old-name" }, { k: "neu", label: "New name", ph: "new-name" }],
+  cmds: [
+    { c: "git branch -m {old} {neu}", why: "Rename any local branch." },
+    { c: "git branch -m {neu}", why: "Or, if you are already ON the branch, just give the new name." }
+  ],
+  flags: [
+    ["-m", "Move/rename. Keeps all history and the reflog; only the label changes."]
+  ],
+  note: "If the old name was pushed, also run: git push origin -u <new-name> and then git push origin --delete <old-name> to update the remote." },
+
+{ id: "branch-merged", cat: "Branches", goal: "List branches already merged into this one",
+  kw: "show merged stale cleanup which safe delete",
+  cmds: [{ c: "git branch --merged" }],
+  flags: [
+    ["--merged", "Lists local branches whose work is fully contained in the current branch. These are the ones safe to delete with git branch -d."]
+  ],
+  note: "The inverse is git branch --no-merged, which shows branches that still contain unmerged work." },
+
+{ id: "branch-prev", cat: "Branches", goal: "Jump back to the branch I was just on",
+  kw: "previous last switch toggle back dash",
+  cmds: [{ c: "git switch -" }],
+  flags: [
+    ["-", "Shorthand for \"the previously checked-out branch\", just like cd - in a shell. Run it again to toggle back."]
+  ] },
+
+// ---------- Stash ----------
+{ id: "stash-save", cat: "Stash", goal: "Stash my changes with a message",
+  kw: "save shelve set aside temporary wip",
+  inputs: [{ k: "msg", label: "Stash message", ph: "message" }],
+  cmds: [{ c: "git stash push -m \"{msg}\"" }],
+  flags: [
+    ["push", "Saves your modified tracked files onto the stash stack and resets the working tree to a clean state."],
+    ["-m", "Labels the stash so git stash list shows something better than WIP on main."]
+  ],
+  note: "Untracked files are not stashed by default. Add -u to include them: git stash push -u -m \"...\"." },
+
+{ id: "stash-list", cat: "Stash", goal: "See what I have stashed",
+  kw: "show list stack view stashes",
+  cmds: [{ c: "git stash list" }],
+  flags: [
+    ["list", "Shows every stash entry, newest first, as stash@{0}, stash@{1}, and so on with their messages."]
+  ],
+  note: "To peek inside one: git stash show -p stash@{0} shows its full diff." },
+
+{ id: "stash-apply", cat: "Stash", goal: "Re-apply the latest stash but keep it in the list",
+  kw: "restore apply unstash keep copy",
+  cmds: [{ c: "git stash apply" }],
+  flags: [
+    ["apply", "Replays the most recent stash onto your working tree but leaves the stash entry in place. Useful when applying the same stash to more than one branch."]
+  ],
+  note: "To apply a specific one: git stash apply stash@{2}." },
+
+{ id: "stash-pop", cat: "Stash", goal: "Re-apply the latest stash and remove it",
+  kw: "pop unstash restore delete take",
+  cmds: [{ c: "git stash pop" }],
+  flags: [
+    ["pop", "Replays the most recent stash onto your working tree and, if it applies cleanly, deletes the stash entry. If there are conflicts, the entry is kept so nothing is lost."]
+  ] },
+
+{ id: "stash-drop", cat: "Stash", goal: "Delete a stash I no longer need",
+  kw: "drop remove discard clear",
+  inputs: [{ k: "n", label: "Stash number (0 = newest)", ph: "n" }],
+  cmds: [{ c: "git stash drop stash@{{n}}" }],
+  flags: [
+    ["drop", "Deletes one stash entry from the stack."],
+    ["stash@{0}", "The newest stash. Numbers come from git stash list."]
+  ],
+  warn: "A dropped stash is very hard to recover (it is not in any branch's reflog). Check git stash show -p stash@{n} before dropping.",
+  safe: "If you want the changes AND to remove the entry, use git stash pop instead. git stash clear deletes ALL stashes; treat it with the same caution." },
+
+// ---------- History ----------
+{ id: "log-pretty", cat: "History", goal: "See a readable history graph",
+  kw: "log oneline pretty tree visualize view commits",
+  cmds: [{ c: "git log --oneline --graph --decorate --all" }],
+  flags: [
+    ["--oneline", "One commit per line: short hash plus subject."],
+    ["--graph", "Draws the branch/merge structure as ASCII lines on the left."],
+    ["--decorate", "Shows branch and tag names next to the commits they point to."],
+    ["--all", "Includes every branch, not just the one you are on. Drop it to see only the current branch."]
+  ] },
+
+{ id: "blame", cat: "History", goal: "See who last changed each line of a file",
+  kw: "blame annotate who wrote author line",
+  inputs: [{ k: "file", label: "File path", ph: "file" }],
+  cmds: [
+    { c: "git blame {file}", why: "Whole file." },
+    { c: "git blame -L 10,20 {file}", why: "Only lines 10 through 20." }
+  ],
+  flags: [
+    ["blame", "Prefixes every line with the commit, author, and date that last touched it."],
+    ["-L 10,20", "Restrict output to a line range, which is much faster on big files."]
+  ],
+  note: "Blame shows the LAST change, which might be a reformat. git log -p -- <file> walks the full change history of the file." },
+
+{ id: "bisect", cat: "History", goal: "Find which commit introduced a bug",
+  kw: "bisect binary search regression broke when",
+  inputs: [{ k: "good", label: "A known-good commit hash", ph: "good-commit" }],
+  cmds: [
+    { c: "git bisect start", why: "Begin the binary search." },
+    { c: "git bisect bad", why: "Mark the current (broken) commit as bad." },
+    { c: "git bisect good {good}", why: "Mark an older commit you know worked. Git now checks out the midpoint." },
+    { c: "git bisect good   # or: git bisect bad", why: "Test the code, then tell git the verdict. Repeat until git names the first bad commit." },
+    { c: "git bisect reset", why: "Done: return to where you started." }
+  ],
+  flags: [
+    ["bisect", "Binary-searches your history. With N commits between good and bad, you only test about log2(N) of them: 1000 commits means roughly 10 tests."]
+  ],
+  note: "If your test is a script that exits 0 on success, git bisect run ./test.sh automates the whole loop." },
+
+{ id: "show-commit", cat: "History", goal: "See exactly what changed in one commit",
+  kw: "show diff inspect view patch contents",
+  inputs: [{ k: "commit", label: "Commit hash", ph: "commit-hash" }],
+  cmds: [{ c: "git show {commit}" }],
+  flags: [
+    ["show", "Prints the commit's metadata (author, date, message) followed by its full diff."]
+  ],
+  note: "Add --stat for a summary of files changed instead of the full diff: git show --stat <commit-hash>." },
+
+{ id: "search-msg", cat: "History", goal: "Search commit messages",
+  kw: "grep find log message text search",
+  inputs: [{ k: "text", label: "Text to find", ph: "text" }],
+  cmds: [{ c: "git log --grep=\"{text}\" --oneline" }],
+  flags: [
+    ["--grep", "Filters commits to those whose message matches the pattern (a regular expression)."],
+    ["--oneline", "Compact one-line-per-commit output."]
+  ],
+  note: "Add -i for case-insensitive matching." },
+
+{ id: "pickaxe", cat: "History", goal: "Find commits that added or removed some code",
+  kw: "pickaxe search code string when introduced deleted -S",
+  inputs: [{ k: "text", label: "Code string", ph: "code-string" }],
+  cmds: [{ c: "git log -S\"{text}\" --oneline" }],
+  flags: [
+    ["-S", "The \"pickaxe\": finds commits where the number of occurrences of the string changed, i.e. where it was added or removed. Different from --grep, which only searches messages."]
+  ],
+  note: "Add -p to see the diffs, or -- <path> to limit the search to a file or folder." },
+
+// ---------- Remotes ----------
+{ id: "remote-add", cat: "Remotes", goal: "Connect my repo to a remote",
+  kw: "add origin url server github link",
+  inputs: [{ k: "url", label: "Remote URL", ph: "remote-url" }],
+  cmds: [{ c: "git remote add origin {url}" }],
+  flags: [
+    ["remote add", "Registers a remote repository under a short name."],
+    ["origin", "The conventional name for your main remote. It is just a label; you can name it anything."]
+  ],
+  note: "Verify with git remote -v, which lists every remote and its fetch/push URLs." },
+
+{ id: "remote-url", cat: "Remotes", goal: "Change a remote's URL",
+  kw: "set-url switch https ssh moved rename repo",
+  inputs: [{ k: "url", label: "New URL", ph: "new-url" }],
+  cmds: [{ c: "git remote set-url origin {url}" }],
+  flags: [
+    ["set-url", "Points an existing remote at a new URL. Common when switching between HTTPS and SSH, or after a repo is renamed or transferred."]
+  ] },
+
+{ id: "fetch-vs-pull", cat: "Remotes", goal: "Update from the remote: fetch vs pull",
+  kw: "difference fetch pull download update sync what",
+  cmds: [
+    { c: "git fetch origin", why: "Download new commits from the remote WITHOUT touching your local branches. Safe to run any time." },
+    { c: "git pull origin {branch}", why: "fetch AND then merge the remote branch into your current branch. Changes your working tree." }
+  ],
+  inputs: [{ k: "branch", label: "Branch name", ph: "branch-name" }],
+  flags: [
+    ["fetch", "Look, do not touch. Updates origin/<branch-name> tracking refs so you can inspect with git log HEAD..origin/main before deciding."],
+    ["pull", "fetch + merge in one step. Convenient, but it can create a merge commit or conflicts on the spot."]
+  ],
+  note: "Rule of thumb: fetch when you want to see what changed first, pull when you are ready to integrate it." },
+
+{ id: "push-upstream", cat: "Remotes", goal: "Push a new branch and set its upstream",
+  kw: "publish first push -u set-upstream tracking",
+  inputs: [{ k: "branch", label: "Branch name", ph: "branch-name" }],
+  cmds: [{ c: "git push -u origin {branch}" }],
+  flags: [
+    ["-u", "Short for --set-upstream. Links your local branch to the remote one, so future plain git push and git pull know where to go without arguments."],
+    ["origin", "The remote to push to."]
+  ] },
+
+{ id: "remote-list", cat: "Remotes", goal: "See my remotes and their URLs",
+  kw: "list show verbose -v remotes",
+  cmds: [{ c: "git remote -v" }],
+  flags: [
+    ["-v", "Verbose: shows the fetch and push URL for each remote instead of just the names."]
+  ] },
+
+// ---------- Sync ----------
+{ id: "pull-rebase", cat: "Sync", goal: "Pull without creating a merge commit",
+  kw: "rebase pull clean linear history update",
+  cmds: [{ c: "git pull --rebase" }],
+  flags: [
+    ["--rebase", "Instead of merging the remote branch into yours, git temporarily lifts your local commits off, fast-forwards to the remote tip, then replays your commits on top. Result: linear history, no merge commit."]
+  ],
+  note: "Your replayed commits get new hashes. That is fine for commits you have not pushed. To make this the default: git config --global pull.rebase true." },
+
+{ id: "force-push", cat: "Sync", goal: "Force push, but safely",
+  kw: "force push lease overwrite rewrite rejected non-fast-forward",
+  cmds: [{ c: "git push --force-with-lease" }],
+  flags: [
+    ["--force-with-lease", "Overwrites the remote branch ONLY if it still looks the way your last fetch saw it. If a teammate pushed in the meantime, the push is refused instead of erasing their work."],
+    ["--force", "(avoid) Overwrites the remote unconditionally, including commits you have never seen. This is how teammates' work gets vaporized."]
+  ],
+  warn: "Any force push rewrites the remote branch. Everyone who has the old history must recover with git pull --rebase or a reset. Never force push to a shared main branch.",
+  safe: "Always prefer --force-with-lease over --force. The lease check is your seatbelt: it fails loudly instead of silently destroying someone else's push. Note that a git fetch right before pushing renews the lease and weakens the protection, so do not blindly fetch first." },
+
+// ---------- Tags ----------
+{ id: "tag-create", cat: "Tags", goal: "Create an annotated tag",
+  kw: "release version label v1 annotate",
+  inputs: [{ k: "tag", label: "Tag name", ph: "v1.0.0" }, { k: "msg", label: "Tag message", ph: "message" }],
+  cmds: [{ c: "git tag -a {tag} -m \"{msg}\"" }],
+  flags: [
+    ["-a", "Annotated: a full tag object with author, date, and message. This is what you want for releases. Without -a you get a lightweight tag, which is just a bare pointer."],
+    ["-m", "The tag message, like a commit message for the release."]
+  ] },
+
+{ id: "tag-push", cat: "Tags", goal: "Push tags to the remote",
+  kw: "publish upload tags release send",
+  inputs: [{ k: "tag", label: "Tag name", ph: "v1.0.0" }],
+  cmds: [
+    { c: "git push origin {tag}", why: "Push one specific tag." },
+    { c: "git push origin --tags", why: "Push ALL local tags at once." }
+  ],
+  flags: [
+    ["--tags", "Sends every local tag the remote does not have. Convenient, but it also pushes any junk or experimental tags lying around, so pushing one by name is often cleaner."]
+  ],
+  note: "Plain git push does not send tags. They always need one of these." },
+
+{ id: "tag-delete", cat: "Tags", goal: "Delete a tag (local and remote)",
+  kw: "remove untag delete release",
+  inputs: [{ k: "tag", label: "Tag name", ph: "v1.0.0" }],
+  cmds: [
+    { c: "git tag -d {tag}", why: "Delete your local copy." },
+    { c: "git push origin --delete {tag}", why: "Delete it on the remote too." }
+  ],
+  flags: [
+    ["-d", "Deletes the local tag."],
+    ["push origin --delete", "Removes the tag from the remote for everyone."]
+  ],
+  warn: "Deleting a published tag affects everyone who fetched it, and release tooling often assumes tags never move or vanish. Re-tagging a different commit with the same name causes real confusion.",
+  safe: "For a botched release tag, prefer publishing a new tag (v1.0.1) over deleting and reusing the old name." },
+
+// ---------- Cleanup ----------
+{ id: "clean", cat: "Cleanup", goal: "Delete untracked files (dry run first)",
+  kw: "clean remove junk build artifacts untracked -n -f",
+  cmds: [
+    { c: "git clean -n -d", why: "DRY RUN: lists what would be deleted. Nothing is removed yet." },
+    { c: "git clean -f -d", why: "Actually delete, only after you have read the dry-run list." }
+  ],
+  flags: [
+    ["-n", "Dry run: print the victims, delete nothing. Always run this first."],
+    ["-f", "Force: actually delete. git refuses to clean without it, by design."],
+    ["-d", "Also remove untracked directories, not just files."]
+  ],
+  warn: "git clean -f deletes untracked files permanently. They were never committed, so git has NO copy to restore. This is one of the few truly unrecoverable git operations.",
+  safe: "Never skip the -n dry run. If the list includes anything you might want, stash it with git stash push -u or add it to .gitignore first. Ignored files are only touched if you add -x, so be extra careful with that flag." },
+
+{ id: "prune", cat: "Cleanup", goal: "Remove stale remote-tracking branches",
+  kw: "prune deleted remote branches stale origin gone cleanup",
+  cmds: [{ c: "git fetch --prune" }],
+  flags: [
+    ["--prune", "While fetching, deletes local origin/<branch-name> references for branches that no longer exist on the remote. Your own local branches are never touched."]
+  ],
+  note: "To make this automatic on every fetch: git config --global fetch.prune true. Equivalent one-off: git remote prune origin." },
+
+{ id: "rm-cached", cat: "Cleanup", goal: "Stop tracking a file but keep it on disk",
+  kw: "untrack ignore committed secret env remove index cached",
+  inputs: [{ k: "file", label: "File path", ph: "file" }],
+  cmds: [
+    { c: "git rm --cached {file}", why: "Remove from the index; the file stays in your folder." },
+    { c: "echo \"{file}\" >> .gitignore", why: "Then ignore it so it does not come back." }
+  ],
+  flags: [
+    ["rm --cached", "Deletes the file from the staging area only. Without --cached, git rm deletes the actual file too."]
+  ],
+  note: "The file stays in old commits. If it holds a real secret, rotate the secret; removing it from history requires rewriting history (git filter-repo) and force-pushing." },
+
+// ---------- Config ----------
+{ id: "config-identity", cat: "Config", goal: "Set my name and email",
+  kw: "identity user.name user.email author setup first",
+  inputs: [{ k: "name", label: "Your name", ph: "your-name" }, { k: "email", label: "Your email", ph: "you@example.com" }],
+  cmds: [
+    { c: "git config --global user.name \"{name}\"" },
+    { c: "git config --global user.email \"{email}\"" }
+  ],
+  flags: [
+    ["--global", "Writes to your user-level config (~/.gitconfig), applying to every repo on this machine. Drop it to set the value for the current repo only, which overrides the global one."]
+  ] },
+
+{ id: "config-default-branch", cat: "Config", goal: "Make new repos start on \"main\"",
+  kw: "default branch init master main rename",
+  cmds: [{ c: "git config --global init.defaultBranch main" }],
+  flags: [
+    ["init.defaultBranch", "The branch name git init uses for brand-new repositories. Has no effect on existing repos."]
+  ],
+  note: "To rename the current repo's branch: git branch -m main, then git push -u origin main." },
+
+{ id: "config-alias", cat: "Config", goal: "Create a git alias",
+  kw: "shortcut alias abbreviation custom command st co",
+  inputs: [{ k: "name", label: "Alias name", ph: "alias-name" }, { k: "cmd", label: "What it runs", ph: "command" }],
+  cmds: [
+    { c: "git config --global alias.{name} \"{cmd}\"" },
+    { c: "git config --global alias.lg \"log --oneline --graph --decorate\"", why: "A worked example: after this, git lg gives you the pretty log." }
+  ],
+  flags: [
+    ["alias.<name>", "Defines git <name> to expand to the given git subcommand and flags. Prefix with ! to run an arbitrary shell command instead."]
+  ] },
+
+{ id: "config-list", cat: "Config", goal: "See all my git settings and where they come from",
+  kw: "list show config values origin which file",
+  cmds: [{ c: "git config --list --show-origin" }],
+  flags: [
+    ["--list", "Prints every setting git currently sees, merged from system, global, and repo config."],
+    ["--show-origin", "Prefixes each line with the file it came from, which is gold when a setting is being overridden and you cannot tell why."]
+  ] }
+];
+
+const CATEGORIES = ["Undoing things", "Branches", "Stash", "History", "Remotes", "Sync", "Tags", "Cleanup", "Config"];
+
+let currentTask = null;
+const inputValues = {}; // taskId -> {key: value}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// Render one command template to HTML with placeholder/substitution styling
+function renderCmdHtml(task, tpl) {
+  const vals = inputValues[task.id] || {};
+  return escapeHtml(tpl).replace(/\{(\w+)\}/g, (m, key) => {
+    const def = (task.inputs || []).find((i) => i.k === key);
+    if (!def) return m;
+    const v = (vals[key] || "").trim();
+    if (v) return '<span class="sub">' + escapeHtml(v) + "</span>";
+    return '<span class="ph">&lt;' + escapeHtml(def.ph) + "&gt;</span>";
+  });
+}
+
+// Render one command template to plain text for the clipboard
+function renderCmdText(task, tpl) {
+  const vals = inputValues[task.id] || {};
+  return tpl.replace(/\{(\w+)\}/g, (m, key) => {
+    const def = (task.inputs || []).find((i) => i.k === key);
+    if (!def) return m;
+    const v = (vals[key] || "").trim();
+    return v ? v : "<" + def.ph + ">";
+  });
+}
+
+function buildNav(filter) {
+  const nav = $("task-nav");
+  nav.innerHTML = "";
+  const q = (filter || "").trim().toLowerCase();
+  let shown = 0;
+  for (const cat of CATEGORIES) {
+    const tasks = TASKS.filter((t) => {
+      if (t.cat !== cat) return false;
+      if (!q) return true;
+      const hay = (t.goal + " " + (t.kw || "") + " " + t.cat).toLowerCase();
+      return q.split(/\s+/).every((w) => hay.includes(w));
+    });
+    if (!tasks.length) continue;
+    const label = document.createElement("div");
+    label.className = "cat-label";
+    label.textContent = cat;
+    nav.appendChild(label);
+    for (const t of tasks) {
+      shown++;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "task-btn";
+      btn.setAttribute("aria-current", currentTask === t.id ? "true" : "false");
+      btn.innerHTML = escapeHtml(t.goal) + (t.warn ? '<span class="mini-badge">caution</span>' : "");
+      btn.addEventListener("click", () => selectTask(t.id));
+      nav.appendChild(btn);
+    }
+  }
+  if (!shown) {
+    const p = document.createElement("p");
+    p.className = "no-results";
+    p.textContent = "No tasks match. Try a simpler word, like \"undo\" or \"branch\".";
+    nav.appendChild(p);
+  }
+  $("search-hint").textContent = q ? shown + " of " + TASKS.length + " tasks match" : TASKS.length + " everyday tasks across " + CATEGORIES.length + " categories";
+}
+
+function selectTask(id) {
+  currentTask = id;
+  buildNav($("search").value);
+  renderDetail();
+}
+
+function renderDetail() {
+  const el = $("detail");
+  const t = TASKS.find((x) => x.id === currentTask);
+  if (!t) return;
+  if (!inputValues[t.id]) inputValues[t.id] = {};
+  el.innerHTML = "";
+
+  const cat = document.createElement("div");
+  cat.className = "detail-cat";
+  cat.textContent = t.cat;
+  el.appendChild(cat);
+
+  const h2 = document.createElement("h2");
+  h2.textContent = t.goal;
+  if (t.warn) {
+    const badge = document.createElement("span");
+    badge.className = "danger-badge";
+    badge.textContent = "destructive";
+    h2.appendChild(badge);
+  }
+  el.appendChild(h2);
+
+  if (t.inputs && t.inputs.length) {
+    const grid = document.createElement("div");
+    grid.className = "inputs-grid";
+    for (const inp of t.inputs) {
+      const wrap = document.createElement("div");
+      const lab = document.createElement("label");
+      lab.textContent = inp.label;
+      lab.setAttribute("for", "inp-" + t.id + "-" + inp.k);
+      const field = document.createElement("input");
+      field.type = "text";
+      field.id = "inp-" + t.id + "-" + inp.k;
+      field.placeholder = inp.ph;
+      field.autocomplete = "off";
+      field.spellcheck = false;
+      field.value = inputValues[t.id][inp.k] || "";
+      field.addEventListener("input", () => {
+        inputValues[t.id][inp.k] = field.value;
+        updateCmds(t);
+      });
+      wrap.appendChild(lab);
+      wrap.appendChild(field);
+      grid.appendChild(wrap);
+    }
+    el.appendChild(grid);
+  }
+
+  t.cmds.forEach((cmd, i) => {
+    const block = document.createElement("div");
+    block.className = "cmd-block";
+    if (cmd.why) {
+      const why = document.createElement("div");
+      why.className = "cmd-why";
+      why.textContent = cmd.why;
+      block.appendChild(why);
+    }
+    const row = document.createElement("div");
+    row.className = "cmd-row";
+    const pre = document.createElement("pre");
+    pre.className = "cmd";
+    pre.id = "cmd-" + t.id + "-" + i;
+    pre.innerHTML = renderCmdHtml(t, cmd.c);
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "copy-btn";
+    copy.textContent = "Copy";
+    copy.setAttribute("aria-label", "Copy command to clipboard");
+    copy.addEventListener("click", async () => {
+      const text = renderCmdText(t, cmd.c);
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+      copy.textContent = "Copied";
+      copy.classList.add("copied");
+      setTimeout(() => { copy.textContent = "Copy"; copy.classList.remove("copied"); }, 1400);
+    });
+    row.appendChild(pre);
+    row.appendChild(copy);
+    block.appendChild(row);
+    el.appendChild(block);
+  });
+
+  if (t.flags && t.flags.length) {
+    const flags = document.createElement("div");
+    flags.className = "flags";
+    const title = document.createElement("div");
+    title.className = "flags-title";
+    title.textContent = "What the pieces mean";
+    flags.appendChild(title);
+    for (const [term, text] of t.flags) {
+      const row = document.createElement("div");
+      row.className = "flag-row";
+      const dt = document.createElement("div");
+      dt.className = "flag-term";
+      dt.textContent = term;
+      const dd = document.createElement("div");
+      dd.className = "flag-text";
+      dd.textContent = text;
+      row.appendChild(dt);
+      row.appendChild(dd);
+      flags.appendChild(row);
+    }
+    el.appendChild(flags);
+  }
+
+  if (t.warn) {
+    const w = document.createElement("div");
+    w.className = "warn-box";
+    w.innerHTML = "<strong>Careful:</strong> " + escapeHtml(t.warn);
+    el.appendChild(w);
+  }
+  if (t.safe) {
+    const s = document.createElement("div");
+    s.className = "safe-box";
+    s.innerHTML = "<strong>Safer route:</strong> " + escapeHtml(t.safe);
+    el.appendChild(s);
+  }
+  if (t.note) {
+    const n = document.createElement("p");
+    n.className = "task-note";
+    n.textContent = t.note;
+    el.appendChild(n);
+  }
+}
+
+function updateCmds(t) {
+  t.cmds.forEach((cmd, i) => {
+    const pre = $("cmd-" + t.id + "-" + i);
+    if (pre) pre.innerHTML = renderCmdHtml(t, cmd.c);
+  });
+}
+
+$("search").addEventListener("input", () => buildNav($("search").value));
+
+// Press / anywhere to jump to search
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+    e.preventDefault();
+    $("search").focus();
+  }
+});
+
+buildNav("");
+</script>
+</body>
+</html>
