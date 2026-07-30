@@ -34,6 +34,10 @@ All client-side. Nothing you type leaves the browser: no requests, no analytics,
 
 Honest scope note: this covers the everyday tasks that send most people searching the web, not the full git reference. For anything exotic, `git help <command>` is the source of truth.
 
+## More
+
+Part of a catalog of single-file browser tools and plain-language references, all MIT licensed and dependency-free: [0xelitesystem.github.io](https://0xelitesystem.github.io/). Built by [elitesystem.ai](https://elitesystem.ai).
+
 ## License
 
 MIT. Copyright 0xelitesystem 2026.
